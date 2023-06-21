@@ -9,7 +9,7 @@ if __name__ == "__main__":
     improved by adding the top 10 of the most present IPs
     '''
     client = MongoClient('mongodb://127.0.0.1:27017')
-    col = client.logs.nginx
+    col = client['logs']['nginx']
     print("{} logs".format(col.estimated_document_count()))
     print("Methods:")
     for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
