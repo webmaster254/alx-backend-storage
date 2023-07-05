@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
-""" Implementing an expiring web cache and tracker
-    obtain the HTML content of a particular URL and returns it """
+'''A module with tools for request caching and tracking.
+'''
 import redis
 import requests
-
-
-redi = redis.Redis()
-count = 0
+from datetime import timedelta
 
 
 def get_page(url: str) -> str:
-    """ Impelements core function of get page which is accessed."""
-    redi.set(f"cached:{url}", count)
-    response = requests.get(url)
-    redi.incr(f"count:{url}")
-    redi.setex(f"cached:{url}", 10, redi.get(f"cached:{url}"))
-    return response.text
-
-
-if __name__ == "__main__":
-    get_page('http://slowwly.robertomurray.co.uk')
+    '''Returns the content of a URL after caching the request's response,
+    and tracking the request.
+    '''
+    if url is None or len(url.strip()) == 0:
+        return ''
+    redis_store = redis.Redis()
+    res_key = 'result:{}'.format(url)
+    req_key = 'count:{}'.format(url)
+    result = redis_store.get(res_key)
+    if result is not None:
+        redis_store.incr(req_key)
+        return result
+    result = requests.get(url).content.decode('utf-8')
+    redis_store.setex(res_key, timedelta(seconds=10), result)
+    return result
